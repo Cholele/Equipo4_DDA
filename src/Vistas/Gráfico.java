@@ -5,6 +5,12 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartFrame;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 public class Gráfico extends javax.swing.JPanel {
 
@@ -60,7 +66,7 @@ public class Gráfico extends javax.swing.JPanel {
             System.out.println("");
         }
         
-        
+        generate_grafico();
     }
      
     //Calculo de pendiente
@@ -96,6 +102,25 @@ public class Gráfico extends javax.swing.JPanel {
             cellRenderer.setHorizontalAlignment(JLabel.CENTER);
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
         }
+    }
+    
+    public void generate_grafico()
+    {
+        XYSeries series = new XYSeries("Gráfico");
+        
+        for (int i = 0; i < 10; i++) {
+            series.add( coordenadas_round[i][0], coordenadas_round[i][1]);
+        }
+        
+        XYSeriesCollection dataset = new XYSeriesCollection();
+        dataset.addSeries(series);
+        
+        JFreeChart chart = ChartFactory.createXYLineChart("Prueba", "X", "Y", dataset, PlotOrientation.VERTICAL, 
+                true, false, false);
+       
+        ChartFrame frame = new ChartFrame("Gráfico", chart);
+        frame.pack();
+        frame.setVisible(true);
     }
 
     @SuppressWarnings("unchecked")
