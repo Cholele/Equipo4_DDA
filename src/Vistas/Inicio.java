@@ -30,6 +30,10 @@ public class Inicio extends javax.swing.JFrame {
     private void Start() 
     {
         this.setLocationRelativeTo(null);
+         // Desplazar el frame a la izquierda
+        int x = 0;
+        int y = getLocation().y;
+        setLocation(x, y);
         Set_Image( Img_dda, "dda.jpg" );
         Set_Image( Img_UNACH, "UNACH.png" );
         datos = new Datos();

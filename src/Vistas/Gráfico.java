@@ -1,14 +1,18 @@
 package Vistas;
 
+import java.awt.Dimension;
+import java.awt.GraphicsEnvironment;
+import java.awt.Point;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartFrame;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
@@ -31,40 +35,35 @@ public class Gráfico extends javax.swing.JPanel {
     {
        X1 = x1; X2 = x2; 
        Y1 = y1; Y2 = y2;
+       JTable_Data.setValueAt(x1, 0, 1); //X1
+       JTable_Data.setValueAt(x2, 1, 1); //X2
+       
+       JTable_Data.setValueAt(y1, 0, 2); //Y1
+       JTable_Data.setValueAt(y2, 1, 2); //Y2
        start();
     }
     
      public void start()
     {
-        coordenadas[0][0] = (int) X1;  coordenadas[0][1] = (int) Y1;
+       
         getPendiente();
+        coordenadas[0][0] = (int) X1;                           coordenadas[0][1] = (int) Y1;
+        coordenadas_round[0][0] = (int) X1;                     coordenadas_round[0][1] = (int) Y1;
+        JTable_coordenadas.setValueAt(  (int) X1, 0, 1 );       JTable_coordenadas.setValueAt(  (int) Y1, 0, 2 ); 
+        
         
         for (int i = 1; i < 10; i++) {
-             getXk( i );
-             getYk( i );
+            getXk( i );
+            JTable_coordenadas.setValueAt(  Math.round ( coordenadas[i][0] ), i, 1 ); //Value, row, column
+            coordenadas_round[i][0] =  Math.round ( coordenadas[i][0] );
+            
+            getYk( i  );
+            JTable_coordenadas.setValueAt(  Math.round ( coordenadas[i][1] ), i, 2 ); //Value, row, column
+            coordenadas_round[i][1] =  Math.round ( coordenadas[i][1] );
          }
         
-        System.out.println("");
-        System.out.println("x1= " + X1 + "  y1 = " + Y1);
-        System.out.println("x2= " + X2 + "  y2 = " + Y2);
-        System.out.println("M= " + m);
-        
-        System.out.println("\n--------------- Coordenadas redondeadas---------------");
-        DefaultTableModel modCoordenadas = (DefaultTableModel)JTable_coordenadas.getModel();
         align_column( JTable_coordenadas );
-         
-        for (int i = 0; i < coordenadas.length; i++) {
-            for (int j = 0; j < coordenadas[0].length; j++) {
-                //Colocamos el valor en una tabla
-                modCoordenadas.setValueAt(  Math.round ( coordenadas[i][j] ), i, j+1 ); //Value, row, column
-                //Guardamos los valores redondeados en otra matriz
-                coordenadas_round[i][j] =  Math.round ( coordenadas[i][j] );
-                
-                //System.out.print("[" +coordenadas[i][j] + "]  ");  
-                System.out.print("[" +coordenadas_round[i][j] + "]  ");  
-            }
-            System.out.println("");
-        }
+        align_column( JTable_Data );
         
         generate_grafico();
     }
@@ -77,7 +76,7 @@ public class Gráfico extends javax.swing.JPanel {
      
     public void getXk(int i)
     {
-         if( m > 1){
+         if( m > 1 ){
              coordenadas[i][0] =  coordenadas[i-1][0] + (1/m) ;
          }else{
              coordenadas[i][0] =  coordenadas[i-1][0] + 1 ;
@@ -86,7 +85,7 @@ public class Gráfico extends javax.swing.JPanel {
      
     public void getYk(int i)
     {
-         if( m < 1  || m == 1){
+         if( m < 1  || m == 1 ){
              coordenadas[i][1] = coordenadas[i-1][1] + m ;
          }else{
              coordenadas[i][1] =  coordenadas[i-1][1] + 1 ;
@@ -97,7 +96,6 @@ public class Gráfico extends javax.swing.JPanel {
     {
         for (int i = 0; i < table.getColumnCount(); i++) {
             TableColumn tableColumn = table.getColumnModel().getColumn(i);
-            //tableColumn.setPreferredWidth( ancho[i] );
             DefaultTableCellRenderer cellRenderer = new DefaultTableCellRenderer();
             cellRenderer.setHorizontalAlignment(JLabel.CENTER);
             table.getColumnModel().getColumn(i).setCellRenderer(cellRenderer);
@@ -107,20 +105,41 @@ public class Gráfico extends javax.swing.JPanel {
     public void generate_grafico()
     {
         XYSeries series = new XYSeries("Gráfico");
-        
-        for (int i = 0; i < 10; i++) {
-            series.add( coordenadas_round[i][0], coordenadas_round[i][1]);
-        }
-        
-        XYSeriesCollection dataset = new XYSeriesCollection();
-        dataset.addSeries(series);
-        
-        JFreeChart chart = ChartFactory.createXYLineChart("Prueba", "X", "Y", dataset, PlotOrientation.VERTICAL, 
-                true, false, false);
+
+       for (int i = 0; i < 10; i++) {
+           series.add( coordenadas_round[i][0], coordenadas_round[i][1]);
+       }
+
+       XYSeriesCollection dataset = new XYSeriesCollection();
+       dataset.addSeries(series);
+
+       JFreeChart chart = ChartFactory.createXYLineChart("Prueba", "X", "Y", dataset, PlotOrientation.VERTICAL, 
+               true, false, false);
        
+        // Etiquetas de coordenadas
+        XYLineAndShapeRenderer renderer = new XYLineAndShapeRenderer();
+        chart.getXYPlot().setRenderer(renderer);
+    
+        //ChartPanel frame = new ChartPanel(chart);
         ChartFrame frame = new ChartFrame("Gráfico", chart);
+        frame.setPreferredSize(new Dimension(800, 800));
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        // Obtener la pantalla y su tamaño
+        GraphicsEnvironment env = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        Dimension screenSize = env.getMaximumWindowBounds().getSize();
+        
+        // Establecer la posición del ChartFrame
+        int frameWidth = frame.getWidth();
+        int frameHeight = frame.getHeight();
+        int x = 1100;
+        int y = 100;
+        Point location = new Point(x, y);
+        frame.setLocation(location);
+        
         frame.pack();
         frame.setVisible(true);
+        //this.add(frame);
     }
 
     @SuppressWarnings("unchecked")
@@ -131,6 +150,8 @@ public class Gráfico extends javax.swing.JPanel {
         Btn_Back = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         JTable_coordenadas = new javax.swing.JTable();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        JTable_Data = new javax.swing.JTable();
 
         jPanel1.setBackground(new java.awt.Color(0, 153, 153));
 
@@ -171,6 +192,25 @@ public class Gráfico extends javax.swing.JPanel {
         JTable_coordenadas.setSelectionBackground(new java.awt.Color(255, 153, 153));
         jScrollPane1.setViewportView(JTable_coordenadas);
 
+        JTable_Data.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {"A(x1,y1)", null, null},
+                {"B(x2,y2)", null, null}
+            },
+            new String [] {
+                "PUNTO", "X", "Y"
+            }
+        ) {
+            Class[] types = new Class [] {
+                java.lang.String.class, java.lang.Integer.class, java.lang.Integer.class
+            };
+
+            public Class getColumnClass(int columnIndex) {
+                return types [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(JTable_Data);
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -181,16 +221,21 @@ public class Gráfico extends javax.swing.JPanel {
                         .addGap(402, 402, 402)
                         .addComponent(Btn_Back, javax.swing.GroupLayout.PREFERRED_SIZE, 232, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(446, Short.MAX_VALUE))
+                        .addGap(310, 310, 310)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 404, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(374, 374, 374)
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 309, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(366, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap(138, Short.MAX_VALUE)
+                .addGap(85, 85, 85)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 85, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(128, 128, 128)
+                .addGap(42, 42, 42)
                 .addComponent(Btn_Back, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(22, 22, 22))
         );
@@ -214,8 +259,10 @@ public class Gráfico extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton Btn_Back;
+    private javax.swing.JTable JTable_Data;
     private javax.swing.JTable JTable_coordenadas;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     // End of variables declaration//GEN-END:variables
 }
